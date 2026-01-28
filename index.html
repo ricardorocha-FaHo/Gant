@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama de Gantt - KPIs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 8px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.4em;
+            margin-bottom: 3px;
+        }
+
+        .header p {
+            font-size: 0.8em;
+            opacity: 0.9;
+        }
+
+        .filters {
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .filter-group label {
+            font-size: 0.7em;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 4px 8px;
+            border: 1px solid #ced4da;
+            border-radius: 3px;
+            font-size: 0.75em;
+            min-width: 120px;
+        }
+
+        .gantt-wrapper {
+            padding: 10px;
+            overflow-x: auto;
+        }
+
+        .gantt-container {
+            min-width: 1400px;
+        }
+
+        .gantt-header {
+            display: flex;
+            margin-bottom: 5px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 3px;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .gantt-tasks {
+            width: 350px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.8em;
+        }
+
+        .gantt-timeline {
+            flex: 1;
+            display: flex;
+            position: relative;
+        }
+
+        .timeline-months {
+            display: flex;
+            width: 100%;
+        }
+
+        .timeline-month {
+            flex: 1;
+            text-align: center;
+            padding: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            border-left: 1px solid rgba(255,255,255,0.3);
+            font-size: 0.7em;
+        }
+
+        .gantt-row {
+            display: flex;
+            margin-bottom: 0px;
+            align-items: center;
+            padding: 2px 0;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.2s ease;
+        }
+
+        .gantt-row:hover {
+            background: #f8f9ff;
+            transform: translateX(3px);
+        }
+
+        .task-info {
+            width: 350px;
+            padding-right: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .task-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.72em;
+            line-height: 1.1;
+        }
+
+        .task-meta {
+            font-size: 0.6em;
+            color: #6c757d;
+            display: flex;
+            gap: 6px;
+        }
+
+        .task-timeline {
+            flex: 1;
+            position: relative;
+            height: 22px;
+            background: linear-gradient(90deg, 
+                rgba(102, 126, 234, 0.05) 0%, 
+                rgba(102, 126, 234, 0.02) 100%);
+        }
+
+        .task-bar {
+            position: absolute;
+            height: 18px;
+            top: 2px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 8px;
+            font-size: 0.6em;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .task-bar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 5;
+        }
+
+        .status-realizado {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .status-etapa1 {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+        }
+
+        .status-etapa2 {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+        }
+
+        .status-etapa3 {
+            background: linear-gradient(135deg, #fd7e14, #dc3545);
+        }
+
+        .status-etapa4 {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+
+        .status-default {
+            background: linear-gradient(135deg, #6c757d, #495057);
+        }
+
+        .legend {
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.7em;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 14px;
+            border-radius: 7px;
+        }
+
+        .stats {
+            padding: 8px 15px;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 8px 15px;
+            border-radius: 5px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.7em;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            pointer-events: none;
+            z-index: 1000;
+            max-width: 220px;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .tooltip.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .gantt-wrapper {
+                padding: 10px;
+            }
+
+            .task-info {
+                width: 200px;
+            }
+
+            .gantt-tasks {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Diagrama de Gantt - KPIs</h1>
+            <p>Matriz de Indicadores Clave de Rendimiento</p>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalKpis">0</div>
+                <div class="stat-label">Total KPIs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="realizados">0</div>
+                <div class="stat-label">Realizados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="enProceso">0</div>
+                <div class="stat-label">En Proceso</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>Tema Global</label>
+                <select id="filterTema">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Esquema</label>
+                <select id="filterEsquema">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Estatus</label>
+                <select id="filterEstatus">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Buscar KPI</label>
+                <input type="text" id="searchKPI" placeholder="Nombre del KPI...">
+            </div>
+        </div>
+
+        <div class="gantt-wrapper">
+            <div class="gantt-container" id="ganttContainer">
+                <!-- El contenido se generará dinámicamente -->
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color status-realizado"></div>
+                <span>Realizado</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color status-etapa1"></div>
+                <span>Etapa 1</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color status-etapa2"></div>
+                <span>Etapa 2</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color status-etapa3"></div>
+                <span>Etapa 3</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color status-etapa4"></div>
+                <span>Etapa 4</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const kpiData = [
+  {
+    "Tema Global": "Ventas",
+    "KPI": "Venta Mensual",
+    "Fuente": "Qlik",
+    "Esquema": "Business KPI",
+    "Estatus": "Etapa 1",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-02-02",
+    "Fecha Fin": "2026-03-06"
+  },
+  {
+    "Tema Global": "Ventas",
+    "KPI": "PVD por farmacia",
+    "Fuente": "Qlik",
+    "Esquema": "Ambos",
+    "Estatus": "Realizado",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2025-12-15",
+    "Fecha Fin": "2025-12-31"
+  },
+  {
+    "Tema Global": "Ventas",
+    "KPI": "PVD por plaza operativa",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 1",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-02-02",
+    "Fecha Fin": "2026-03-06"
+  },
+  {
+    "Tema Global": "Ventas",
+    "KPI": "Alcance de venta objetivo",
+    "Fuente": "Qlik",
+    "Esquema": "Ambos",
+    "Estatus": "Realizado",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2025-12-15",
+    "Fecha Fin": "2026-01-13"
+  },
+  {
+    "Tema Global": "Ventas",
+    "KPI": "Alcance de venta correctivo",
+    "Fuente": "Qlik",
+    "Esquema": "Ambos",
+    "Estatus": "Realizado",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2025-12-15",
+    "Fecha Fin": "2026-01-13"
+  },
+  {
+    "Tema Global": "Ventas",
+    "KPI": "Alcance de venta emotivo",
+    "Fuente": "Qlik",
+    "Esquema": "Ambos",
+    "Estatus": "Realizado",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2025-12-15",
+    "Fecha Fin": "2026-01-13"
+  },
+  {
+    "Tema Global": "Ventas",
+    "KPI": "Alcance de venta impulsivo",
+    "Fuente": "Qlik",
+    "Esquema": "Ambos",
+    "Estatus": "Realizado",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2025-12-15",
+    "Fecha Fin": "2026-01-13"
+  },
+  {
+    "Tema Global": "Ventas",
+    "KPI": "Alcance de venta preventivo",
+    "Fuente": "Qlik",
+    "Esquema": "Ambos",
+    "Estatus": "Realizado",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2025-12-15",
+    "Fecha Fin": "2026-01-13"
+  },
+  {
+    "Tema Global": "Ventas",
+    "KPI": "Alcance de venta marca propia",
+    "Fuente": "Qlik",
+    "Esquema": "Ambos",
+    "Estatus": "Realizado",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2025-12-15",
+    "Fecha Fin": "2026-01-13"
+  },
+  {
+    "Tema Global": "Ventas",
+    "KPI": "Mix MP",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 2",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-03-09",
+    "Fecha Fin": "2026-04-03"
+  },
+  {
+    "Tema Global": "Ventas",
+    "KPI": "Margen Neto",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 1",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-02-02",
+    "Fecha Fin": "2026-03-06"
+  },
+  {
+    "Tema Global": "Ventas",
+    "KPI": "Crecimiento vs MAA",
+    "Fuente": "Qlik",
+    "Esquema": "Business KPI",
+    "Estatus": "Etapa 1",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-02-02",
+    "Fecha Fin": "2026-03-06"
+  },
+  {
+    "Tema Global": "Ventas",
+    "KPI": "Conteo sucursales",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 1",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-02-02",
+    "Fecha Fin": "2026-03-06"
+  },
+  {
+    "Tema Global": "SOM",
+    "KPI": "Vacantes Medicas",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 3",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-04-20",
+    "Fecha Fin": "2026-05-29"
+  },
+  {
+    "Tema Global": "SOM",
+    "KPI": "Consultas promedio por sucursal",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 3",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-04-20",
+    "Fecha Fin": "2026-05-29"
+  },
+  {
+    "Tema Global": "SOM",
+    "KPI": "% Efectividad",
+    "Fuente": "Qlik",
+    "Esquema": "Business KPI",
+    "Estatus": "Etapa 3",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-04-20",
+    "Fecha Fin": "2026-05-29"
+  },
+  {
+    "Tema Global": "SAD",
+    "KPI": "% Cancelación",
+    "Fuente": "Bringoz",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 3",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-04-20",
+    "Fecha Fin": "2026-05-29"
+  },
+  {
+    "Tema Global": "SAD",
+    "KPI": "Tiempo Promedio Entrega",
+    "Fuente": "Bringoz",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 3",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-04-20",
+    "Fecha Fin": "2026-05-29"
+  },
+  {
+    "Tema Global": "RH",
+    "KPI": "Cobertura Farmacia",
+    "Fuente": "Qlik",
+    "Esquema": "Ambos",
+    "Estatus": "Realizado",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-01-05",
+    "Fecha Fin": "2026-01-13"
+  },
+  {
+    "Tema Global": "RH",
+    "KPI": "Vacantes Farmacia",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 2",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-03-09",
+    "Fecha Fin": "2026-04-03"
+  },
+  {
+    "Tema Global": "RH",
+    "KPI": "Cobertura MF",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 2",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-03-09",
+    "Fecha Fin": "2026-04-03"
+  },
+  {
+    "Tema Global": "RH",
+    "KPI": "Cobertura CBU",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 2",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-03-09",
+    "Fecha Fin": "2026-04-03"
+  },
+  {
+    "Tema Global": "Finanzas",
+    "KPI": "Monto arrendamiento",
+    "Fuente": "Manual",
+    "Esquema": "Ambos",
+    "Estatus": "Realizado",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-01-05",
+    "Fecha Fin": "2026-01-13"
+  },
+  {
+    "Tema Global": "Finanzas",
+    "KPI": "Monto aportación neta",
+    "Fuente": "Manual",
+    "Esquema": "Business KPI",
+    "Estatus": "Realizado",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-01-05",
+    "Fecha Fin": "2026-01-13"
+  },
+  {
+    "Tema Global": "Finanzas",
+    "KPI": "Monto aportación neta promedio por sucursal",
+    "Fuente": "Manual",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 3",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-04-20",
+    "Fecha Fin": "2026-05-29"
+  },
+  {
+    "Tema Global": "Finanzas",
+    "KPI": "PVD Nocturno",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 3",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-04-20",
+    "Fecha Fin": "2026-05-29"
+  },
+  {
+    "Tema Global": "Promociones",
+    "KPI": "Venta producto estrella /checkout",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 1",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-02-02",
+    "Fecha Fin": "2026-03-06"
+  },
+  {
+    "Tema Global": "Procesos",
+    "KPI": "Monto mensual Inventario Negativo",
+    "Fuente": "Manual",
+    "Esquema": "Ambos",
+    "Estatus": "Realizado",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-01-05",
+    "Fecha Fin": "2026-01-13"
+  },
+  {
+    "Tema Global": "Procesos",
+    "KPI": "Resultado Inventario ( Promedio x Suc) en Monto",
+    "Fuente": "Oracle",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 2",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-03-09",
+    "Fecha Fin": "2026-04-03"
+  },
+  {
+    "Tema Global": "Procesos",
+    "KPI": "% inventario sobre venta",
+    "Fuente": "Oracle",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 1",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-02-02",
+    "Fecha Fin": "2026-03-06"
+  },
+  {
+    "Tema Global": "Procesos",
+    "KPI": "No de Suc arriba del 0.1%",
+    "Fuente": "Oracle",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 2",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-03-09",
+    "Fecha Fin": "2026-04-03"
+  },
+  {
+    "Tema Global": "Precios",
+    "KPI": "Competitividad sondeos",
+    "Fuente": "BI",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 4",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-06-08",
+    "Fecha Fin": "2026-07-10"
+  },
+  {
+    "Tema Global": "Operativos",
+    "KPI": "Promedio folios diarios por sucursal",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 1",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-02-02",
+    "Fecha Fin": "2026-03-06"
+  },
+  {
+    "Tema Global": "Operativos",
+    "KPI": "Canasta",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 1",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-02-02",
+    "Fecha Fin": "2026-03-06"
+  },
+  {
+    "Tema Global": "Operativos",
+    "KPI": "Ticket Electrónico",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 1",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-02-02",
+    "Fecha Fin": "2026-03-06"
+  },
+  {
+    "Tema Global": "Operativos",
+    "KPI": "Ticket promedio total",
+    "Fuente": "Qlik",
+    "Esquema": "Ambos",
+    "Estatus": "Etapa 1",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-02-02",
+    "Fecha Fin": "2026-03-06"
+  },
+  {
+    "Tema Global": "Mercado",
+    "KPI": "% PDM (YTD) (Unidades) 4 correctivos",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 4",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-06-08",
+    "Fecha Fin": "2026-07-10"
+  },
+  {
+    "Tema Global": "Mercado",
+    "KPI": "% Crec PDM Acumulado 2024 ( 4 Correctivos)",
+    "Fuente": "Qlik",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 4",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-06-08",
+    "Fecha Fin": "2026-07-10"
+  },
+  {
+    "Tema Global": "Lealtad",
+    "KPI": "Uso MDA en folios",
+    "Fuente": "Qlik",
+    "Esquema": "Ambos",
+    "Estatus": "Realizado",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-01-05",
+    "Fecha Fin": "2026-01-13"
+  },
+  {
+    "Tema Global": "Lealtad",
+    "KPI": "Ticket promedio MDA",
+    "Fuente": "BI",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 4",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-06-08",
+    "Fecha Fin": "2026-07-10"
+  },
+  {
+    "Tema Global": "Inventario",
+    "KPI": "% Efectividad de las devoluciones",
+    "Fuente": "BI",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 4",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-06-08",
+    "Fecha Fin": "2026-07-10"
+  },
+  {
+    "Tema Global": "Faltante",
+    "KPI": "Faltante Neto",
+    "Fuente": "BI",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 4",
+    "Periodo": "Acumulado mensual",
+    "Fecha Inicio": "2026-06-08",
+    "Fecha Fin": "2026-07-10"
+  },
+  {
+    "Tema Global": "Expansión",
+    "KPI": "% de alcance del Plan Rector",
+    "Fuente": "Manual",
+    "Esquema": "DataSet",
+    "Estatus": "Etapa 4",
+    "Periodo": "Cierre mensual",
+    "Fecha Inicio": "2026-06-08",
+    "Fecha Fin": "2026-07-10"
+  }
+];
+
+        let filteredData = [...kpiData];
+
+        // Función para parsear fechas
+        function parseDate(dateStr) {
+            if (!dateStr) return null;
+            
+            // Si es formato YYYY-MM-DD
+            if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                return new Date(dateStr);
+            }
+            
+            return new Date(dateStr);
+        }
+
+        // Calcular rango de fechas
+        function getDateRange() {
+            let minDate = new Date(2025, 11, 1); // Diciembre 2025
+            let maxDate = new Date(2026, 7, 31); // Agosto 2026
+            return { minDate, maxDate };
+        }
+
+        // Generar meses para el timeline
+        function generateMonths(minDate, maxDate) {
+            const months = [];
+            const current = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+            const end = new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
+
+            while (current <= end) {
+                months.push({
+                    name: current.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }),
+                    date: new Date(current)
+                });
+                current.setMonth(current.getMonth() + 1);
+            }
+
+            return months;
+        }
+
+        // Obtener clase de estatus
+        function getStatusClass(estatus) {
+            if (!estatus) return 'status-default';
+            const status = estatus.toLowerCase().replace(/\s/g, '');
+            if (status === 'realizado') return 'status-realizado';
+            if (status === 'etapa1') return 'status-etapa1';
+            if (status === 'etapa2') return 'status-etapa2';
+            if (status === 'etapa3') return 'status-etapa3';
+            if (status === 'etapa4') return 'status-etapa4';
+            return 'status-default';
+        }
+
+        // Calcular posición de la barra en el timeline
+        function calculateBarPosition(inicio, fin, minDate, maxDate) {
+            const totalDays = (maxDate - minDate) / (1000 * 60 * 60 * 24);
+            const startDays = (inicio - minDate) / (1000 * 60 * 60 * 24);
+            const duration = (fin - inicio) / (1000 * 60 * 60 * 24);
+
+            const left = (startDays / totalDays) * 100;
+            const width = (duration / totalDays) * 100;
+
+            return { left: Math.max(0, left), width: Math.max(1, width) };
+        }
+
+        // Renderizar el diagrama de Gantt
+        function renderGantt() {
+            const container = document.getElementById('ganttContainer');
+            const { minDate, maxDate } = getDateRange();
+            const months = generateMonths(minDate, maxDate);
+
+            // Ordenar por fecha de inicio (más antigua primero)
+            const sortedData = [...filteredData].sort((a, b) => {
+                const dateA = parseDate(a['Fecha Inicio']);
+                const dateB = parseDate(b['Fecha Inicio']);
+                
+                if (!dateA && !dateB) return 0;
+                if (!dateA) return 1;
+                if (!dateB) return -1;
+                
+                return dateA - dateB; // Más antigua primero
+            });
+
+            // Header
+            let html = `
+                <div class="gantt-header">
+                    <div class="gantt-tasks">KPI / Tarea</div>
+                    <div class="gantt-timeline">
+                        <div class="timeline-months">
+                            ${months.map(m => `<div class="timeline-month">${m.name}</div>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Rows
+            sortedData.forEach(kpi => {
+                const inicio = parseDate(kpi['Fecha Inicio']);
+                const fin = parseDate(kpi['Fecha Fin']);
+
+                if (!inicio || !fin) return;
+
+                const pos = calculateBarPosition(inicio, fin, minDate, maxDate);
+                const statusClass = getStatusClass(kpi['Estatus']);
+
+                html += `
+                    <div class="gantt-row">
+                        <div class="task-info">
+                            <div class="task-name">${kpi['KPI']}</div>
+                            <div class="task-meta">
+                                <span>${kpi['Tema Global'] || 'N/A'}</span>
+                                <span>${kpi['Esquema'] || 'N/A'}</span>
+                                <span>${kpi['Estatus'] || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <div class="task-timeline">
+                            <div class="task-bar ${statusClass}" 
+                                 style="left: ${pos.left}%; width: ${pos.width}%"
+                                 data-kpi="${kpi['KPI']}"
+                                 data-inicio="${inicio.toLocaleDateString('es-ES')}"
+                                 data-fin="${fin.toLocaleDateString('es-ES')}"
+                                 data-estatus="${kpi['Estatus'] || 'N/A'}"
+                                 data-esquema="${kpi['Esquema'] || 'N/A'}"
+                                 data-fuente="${kpi['Fuente'] || 'N/A'}">
+                                ${kpi['Estatus'] || ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            addTooltipListeners();
+        }
+
+        // Añadir listeners para tooltips
+        function addTooltipListeners() {
+            const bars = document.querySelectorAll('.task-bar');
+            const tooltip = document.getElementById('tooltip');
+
+            bars.forEach(bar => {
+                bar.addEventListener('mouseenter', (e) => {
+                    const kpi = e.target.dataset.kpi;
+                    const inicio = e.target.dataset.inicio;
+                    const fin = e.target.dataset.fin;
+                    const estatus = e.target.dataset.estatus;
+                    const esquema = e.target.dataset.esquema;
+                    const fuente = e.target.dataset.fuente;
+
+                    tooltip.innerHTML = `
+                        <strong>${kpi}</strong><br>
+                        Inicio: ${inicio}<br>
+                        Fin: ${fin}<br>
+                        Estatus: ${estatus}<br>
+                        Esquema: ${esquema}<br>
+                        Fuente: ${fuente}
+                    `;
+                    tooltip.classList.add('show');
+                });
+
+                bar.addEventListener('mousemove', (e) => {
+                    tooltip.style.left = (e.clientX + 15) + 'px';
+                    tooltip.style.top = (e.clientY + 15) + 'px';
+                });
+
+                bar.addEventListener('mouseleave', () => {
+                    tooltip.classList.remove('show');
+                });
+            });
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            const realizados = kpiData.filter(k => k['Estatus'] && k['Estatus'].toLowerCase() === 'realizado').length;
+            const enProceso = kpiData.filter(k => k['Estatus'] && k['Estatus'].toLowerCase().includes('etapa')).length;
+
+            document.getElementById('totalKpis').textContent = kpiData.length;
+            document.getElementById('realizados').textContent = realizados;
+            document.getElementById('enProceso').textContent = enProceso;
+        }
+
+        // Poblar filtros
+        function populateFilters() {
+            const temas = [...new Set(kpiData.map(k => k['Tema Global']).filter(t => t))];
+            const esquemas = [...new Set(kpiData.map(k => k['Esquema']).filter(e => e))];
+            const estatus = [...new Set(kpiData.map(k => k['Estatus']).filter(e => e))];
+
+            const filterTema = document.getElementById('filterTema');
+            const filterEsquema = document.getElementById('filterEsquema');
+            const filterEstatus = document.getElementById('filterEstatus');
+
+            temas.sort().forEach(tema => {
+                const option = document.createElement('option');
+                option.value = tema;
+                option.textContent = tema;
+                filterTema.appendChild(option);
+            });
+
+            esquemas.sort().forEach(esquema => {
+                const option = document.createElement('option');
+                option.value = esquema;
+                option.textContent = esquema;
+                filterEsquema.appendChild(option);
+            });
+
+            estatus.sort().forEach(status => {
+                const option = document.createElement('option');
+                option.value = status;
+                option.textContent = status;
+                filterEstatus.appendChild(option);
+            });
+        }
+
+        // Aplicar filtros
+        function applyFilters() {
+            const temaFilter = document.getElementById('filterTema').value;
+            const esquemaFilter = document.getElementById('filterEsquema').value;
+            const estatusFilter = document.getElementById('filterEstatus').value;
+            const searchTerm = document.getElementById('searchKPI').value.toLowerCase();
+
+            filteredData = kpiData.filter(kpi => {
+                const matchTema = !temaFilter || kpi['Tema Global'] === temaFilter;
+                const matchEsquema = !esquemaFilter || kpi['Esquema'] === esquemaFilter;
+                const matchEstatus = !estatusFilter || kpi['Estatus'] === estatusFilter;
+                const matchSearch = !searchTerm || kpi['KPI'].toLowerCase().includes(searchTerm);
+
+                return matchTema && matchEsquema && matchEstatus && matchSearch;
+            });
+
+            renderGantt();
+        }
+
+        // Event listeners para filtros
+        document.getElementById('filterTema').addEventListener('change', applyFilters);
+        document.getElementById('filterEsquema').addEventListener('change', applyFilters);
+        document.getElementById('filterEstatus').addEventListener('change', applyFilters);
+        document.getElementById('searchKPI').addEventListener('input', applyFilters);
+
+        // Inicializar
+        populateFilters();
+        updateStats();
+        renderGantt();
+    </script>
+</body>
+</html>

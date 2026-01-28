@@ -88,7 +88,7 @@
             display: flex;
             margin-bottom: 5px;
             border-bottom: 2px solid #667eea;
-            padding-bottom: 3px;
+            padding-bottom: 2px;
             position: sticky;
             top: 0;
             background: white;
@@ -116,12 +116,13 @@
         .timeline-month {
             flex: 1;
             text-align: center;
-            padding: 3px;
+            padding: 2px 1px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             font-weight: 600;
             border-left: 1px solid rgba(255,255,255,0.3);
-            font-size: 0.7em;
+            font-size: 0.65em;
+            line-height: 1.1;
         }
 
         .gantt-row {
@@ -157,23 +158,58 @@
             font-size: 0.6em;
             color: #6c757d;
             display: flex;
-            gap: 6px;
+            gap: 4px;
+        }
+
+        .tag {
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-weight: 500;
+        }
+
+        .tag:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .tag-tema {
+            background-color: #e8eaf6;
+            color: #5c6bc0;
+        }
+
+        .tag-esquema {
+            background-color: #f3e5f5;
+            color: #ba68c8;
+        }
+
+        .tag-estatus {
+            background-color: #e0f2f1;
+            color: #26a69a;
+        }
+
+        .tag:active {
+            transform: scale(0.95);
         }
 
         .task-timeline {
             flex: 1;
             position: relative;
-            height: 22px;
+            height: 20px;
             background: linear-gradient(90deg, 
-                rgba(102, 126, 234, 0.05) 0%, 
-                rgba(102, 126, 234, 0.02) 100%);
+                rgba(102, 126, 234, 0.04) 0%, 
+                rgba(102, 126, 234, 0.01) 100%);
         }
 
         .task-bar {
             position: absolute;
-            height: 18px;
+            height: 16px;
             top: 2px;
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -288,6 +324,118 @@
             display: block;
         }
 
+        .summary-row {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-top: 3px solid #667eea;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .summary-title {
+            font-weight: 700;
+            font-size: 0.9em;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .summary-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-section {
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            background: white;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .summary-section-header {
+            font-weight: 600;
+            font-size: 0.8em;
+            color: #667eea;
+            padding: 10px 12px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+            user-select: none;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .summary-section-header:hover {
+            background: linear-gradient(135deg, #e9ecef, #dee2e6);
+        }
+
+        .summary-section-header .toggle-icon {
+            font-size: 0.8em;
+            transition: transform 0.3s ease;
+            color: #495057;
+        }
+
+        .summary-section-header.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .summary-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: white;
+        }
+
+        .summary-items.expanded {
+            max-height: 600px;
+        }
+
+        .summary-item {
+            font-size: 0.75em;
+            color: #495057;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid #f8f9fa;
+            transition: background 0.2s ease;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-item:hover {
+            background: #f8f9ff;
+        }
+
+        .summary-item-name {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .summary-item-count {
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 3px 10px;
+            border-radius: 12px;
+            min-width: 30px;
+            text-align: center;
+            font-size: 0.95em;
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+        }
+
         @media (max-width: 768px) {
             .gantt-wrapper {
                 padding: 10px;
@@ -353,6 +501,9 @@
         <div class="gantt-wrapper">
             <div class="gantt-container" id="ganttContainer">
                 <!-- El contenido se generará dinámicamente -->
+            </div>
+            <div class="summary-row" id="summaryRow">
+                <!-- El resumen se generará dinámicamente -->
             </div>
         </div>
 
@@ -830,10 +981,32 @@
             return new Date(dateStr);
         }
 
-        // Calcular rango de fechas
-        function getDateRange() {
-            let minDate = new Date(2025, 11, 1); // Diciembre 2025
-            let maxDate = new Date(2026, 7, 31); // Agosto 2026
+        // Calcular rango de fechas dinámicamente basado en los datos filtrados
+        function getDateRange(data) {
+            if (data.length === 0) {
+                // Si no hay datos, usar el rango completo
+                return { 
+                    minDate: new Date(2025, 11, 1), 
+                    maxDate: new Date(2026, 7, 31) 
+                };
+            }
+
+            let minDate = new Date(2026, 11, 31);
+            let maxDate = new Date(2025, 0, 1);
+
+            data.forEach(kpi => {
+                const inicio = parseDate(kpi['Fecha Inicio']);
+                const fin = parseDate(kpi['Fecha Fin']);
+
+                if (inicio && inicio < minDate) minDate = inicio;
+                if (fin && fin > maxDate) maxDate = fin;
+            });
+
+            // Ajustar al inicio del mes
+            minDate = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+            // Ajustar al final del mes
+            maxDate = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
+
             return { minDate, maxDate };
         }
 
@@ -881,9 +1054,7 @@
         // Renderizar el diagrama de Gantt
         function renderGantt() {
             const container = document.getElementById('ganttContainer');
-            const { minDate, maxDate } = getDateRange();
-            const months = generateMonths(minDate, maxDate);
-
+            
             // Ordenar por fecha de inicio (más antigua primero)
             const sortedData = [...filteredData].sort((a, b) => {
                 const dateA = parseDate(a['Fecha Inicio']);
@@ -893,8 +1064,12 @@
                 if (!dateA) return 1;
                 if (!dateB) return -1;
                 
-                return dateA - dateB; // Más antigua primero
+                return dateA - dateB;
             });
+
+            // Calcular rango de fechas dinámicamente
+            const { minDate, maxDate } = getDateRange(sortedData);
+            const months = generateMonths(minDate, maxDate);
 
             // Header
             let html = `
@@ -923,9 +1098,9 @@
                         <div class="task-info">
                             <div class="task-name">${kpi['KPI']}</div>
                             <div class="task-meta">
-                                <span>${kpi['Tema Global'] || 'N/A'}</span>
-                                <span>${kpi['Esquema'] || 'N/A'}</span>
-                                <span>${kpi['Estatus'] || 'N/A'}</span>
+                                <span class="tag tag-tema" data-filter-type="tema" data-filter-value="${kpi['Tema Global'] || ''}">${kpi['Tema Global'] || 'N/A'}</span>
+                                <span class="tag tag-esquema" data-filter-type="esquema" data-filter-value="${kpi['Esquema'] || ''}">${kpi['Esquema'] || 'N/A'}</span>
+                                <span class="tag tag-estatus" data-filter-type="estatus" data-filter-value="${kpi['Estatus'] || ''}">${kpi['Estatus'] || 'N/A'}</span>
                             </div>
                         </div>
                         <div class="task-timeline">
@@ -946,6 +1121,105 @@
 
             container.innerHTML = html;
             addTooltipListeners();
+            addTagClickListeners();
+            renderSummary(sortedData);
+        }
+
+        // Renderizar el resumen
+        function renderSummary(data) {
+            const summaryContainer = document.getElementById('summaryRow');
+            
+            // Contar por categorías
+            const temaCount = {};
+            const esquemaCount = {};
+            const estatusCount = {};
+            
+            data.forEach(kpi => {
+                const tema = kpi['Tema Global'] || 'Sin tema';
+                const esquema = kpi['Esquema'] || 'Sin esquema';
+                const estatus = kpi['Estatus'] || 'Sin estatus';
+                
+                temaCount[tema] = (temaCount[tema] || 0) + 1;
+                esquemaCount[esquema] = (esquemaCount[esquema] || 0) + 1;
+                estatusCount[estatus] = (estatusCount[estatus] || 0) + 1;
+            });
+            
+            // Ordenar por cantidad (mayor a menor)
+            const sortedTemas = Object.entries(temaCount).sort((a, b) => b[1] - a[1]);
+            const sortedEsquemas = Object.entries(esquemaCount).sort((a, b) => b[1] - a[1]);
+            const sortedEstatus = Object.entries(estatusCount).sort((a, b) => b[1] - a[1]);
+            
+            // Calcular totales
+            const totalTemas = Object.keys(temaCount).length;
+            const totalEsquemas = Object.keys(esquemaCount).length;
+            const totalEstatus = Object.keys(estatusCount).length;
+            
+            const html = `
+                <div class="summary-title">Resumen (${data.length} KPIs mostrados)</div>
+                <div class="summary-content">
+                    <div class="summary-section">
+                        <div class="summary-section-header" data-section="tema">
+                            <span>Por Tema Global (${totalTemas})</span>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                        <div class="summary-items" data-section-content="tema">
+                            ${sortedTemas.map(([name, count]) => `
+                                <div class="summary-item">
+                                    <span class="summary-item-name">${name}</span>
+                                    <span class="summary-item-count">${count}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="summary-section">
+                        <div class="summary-section-header" data-section="esquema">
+                            <span>Por Esquema (${totalEsquemas})</span>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                        <div class="summary-items" data-section-content="esquema">
+                            ${sortedEsquemas.map(([name, count]) => `
+                                <div class="summary-item">
+                                    <span class="summary-item-name">${name}</span>
+                                    <span class="summary-item-count">${count}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="summary-section">
+                        <div class="summary-section-header" data-section="estatus">
+                            <span>Por Estatus (${totalEstatus})</span>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                        <div class="summary-items" data-section-content="estatus">
+                            ${sortedEstatus.map(([name, count]) => `
+                                <div class="summary-item">
+                                    <span class="summary-item-name">${name}</span>
+                                    <span class="summary-item-count">${count}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            summaryContainer.innerHTML = html;
+            addSummaryToggleListeners();
+        }
+
+        // Añadir listeners para expandir/colapsar secciones del resumen
+        function addSummaryToggleListeners() {
+            const headers = document.querySelectorAll('.summary-section-header');
+            
+            headers.forEach(header => {
+                header.addEventListener('click', () => {
+                    const section = header.dataset.section;
+                    const content = document.querySelector(`[data-section-content="${section}"]`);
+                    
+                    // Toggle expanded class
+                    header.classList.toggle('expanded');
+                    content.classList.toggle('expanded');
+                });
+            });
         }
 
         // Añadir listeners para tooltips
@@ -980,6 +1254,33 @@
 
                 bar.addEventListener('mouseleave', () => {
                     tooltip.classList.remove('show');
+                });
+            });
+        }
+
+        // Añadir listeners para clicks en las etiquetas
+        function addTagClickListeners() {
+            const tags = document.querySelectorAll('.tag');
+            
+            tags.forEach(tag => {
+                tag.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    const filterType = e.currentTarget.dataset.filterType;
+                    const filterValue = e.currentTarget.dataset.filterValue;
+                    
+                    if (!filterValue) return;
+                    
+                    // Aplicar el filtro correspondiente
+                    if (filterType === 'tema') {
+                        document.getElementById('filterTema').value = filterValue;
+                    } else if (filterType === 'esquema') {
+                        document.getElementById('filterEsquema').value = filterValue;
+                    } else if (filterType === 'estatus') {
+                        document.getElementById('filterEstatus').value = filterValue;
+                    }
+                    
+                    applyFilters();
                 });
             });
         }
